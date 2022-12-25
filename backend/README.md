@@ -67,32 +67,185 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 8. Create a `POST` endpoint to get questions to play the quiz. This endpoint should take a category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions.
 9. Create error handlers for all expected errors including 400, 404, 422, and 500.
 
-## Documenting your Endpoints
+## API Reference
 
-You will need to provide detailed documentation of your API endpoints including the URL, request parameters, and the response body. Use the example below as a reference.
+### Getting Started
+- Base URL: At present this app can only be run locally and is not hosted as a base URL. The backend app is hosted at the default, `http://127.0.0.1:5000/`, which is set as a proxy in the frontend configuration. 
+- Authentication: This version of the application does not require authentication or API keys.
 
-### Documentation Example
+### Error Handling
+Errors are returned as JSON objects in the following format:
+```
+{
+    "success": False, 
+    "error": 400,
+    "message": "bad request"
+}
+```
+The API will return three error types when requests fail:
+- 400: Bad Request
+- 404: Resource Not Found
+- 422: Not Processable 
+- 501: Resource Not Supported
 
-`GET '/api/v1.0/categories'`
+### Expected endpoints and behaviors
+
+` curl -X GET http://127.0.0.1:5000/categories`
 
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
-- Returns: An object with a single key, `categories`, that contains an object of `id: category_string` key: value pairs.
+- Returns: An object with a key, categories, that contains an object of id: category_string key:value pairs, and a success key.
 
 ```json
 {
-  "1": "Science",
-  "2": "Art",
-  "3": "Geography",
-  "4": "History",
-  "5": "Entertainment",
-  "6": "Sports"
+  "success": true,
+  "categories": {
+    "1": "Science",
+    "2": "Art",
+    "3": "Geography",
+    "4": "History",
+    "5": "Entertainment",
+    "6": "Sports"
+  }
 }
 ```
 
-## Testing
+---
 
-Write at least one test for the success and at least one error behavior of each endpoint using the unittest library.
+`curl -X GET http://127.0.0.1:5000/questions?page=1`
+
+- Fetches a paginated set of questions, a total number of questions, all categories and current category string.
+- Request Arguments: `page` - integer
+- Returns: An object with 10 paginated questions, total questions, object including all categories, current category string and success value
+
+```json
+{
+  "success": true,
+  "questions": [
+    {
+      "id": 1,
+      "question": "This is a question",
+      "answer": "This is an answer",
+      "difficulty": 5,
+      "category": 2
+    }
+  ],
+  "totalQuestions": 100,
+  "categories": {
+    "1": "Science",
+    "2": "Art",
+    "3": "Geography",
+    "4": "History",
+    "5": "Entertainment",
+    "6": "Sports"
+  },
+  "currentCategory": "History"
+}
+```
+
+---
+
+`curl -X DELETE http://127.0.0.1:5000/questions/1`
+
+- Deletes a specified question using the id of the question
+- Request Arguments: `id` - integer
+- Returns: ID of the deleted question and success value
+
+```json
+{
+  "success": true,
+  "deleted": 1
+}
+```
+
+---
+
+`curl -X POST -H "Content-Type: application/json" -d '{"question": "new question", "answer": "new answer", "category": "new category", "dificulty": "value"}' http://127.0.0.1:5000/questions`
+
+- Sends a post request in order to add a new question
+- Request Body:
+- Returns: ID of created question and success value
+
+```json
+{
+  "success": true,
+  "created": 1,
+}
+```
+
+---
+
+`curl -X POST -H "Content-Type: application/json" -d '{"searchTerm": "this"}' http://127.0.0.1:5000/questions/search`
+
+- Sends a post request in order to search for a specific question by search term
+- Request Body:
+- Returns: any array of questions, a number of totalQuestions that met the search term and the current category string
+
+```json
+{
+  "success": true,
+  "questions": [
+    {
+      "id": 1,
+      "question": "This is a question",
+      "answer": "This is an answer",
+      "difficulty": 5,
+      "category": 5
+    }
+  ],
+  "totalQuestions": 100,
+  "currentCategory": null
+}
+```
+
+---
+
+`curl -X GET http://127.0.0.1:5000/categories/2/questions`
+
+- Fetches questions for a cateogry specified by id request argument
+- Request Arguments: `id` - integer
+- Returns: An object with questions for the specified category, total questions, current category string and success value
+
+```json
+{
+  "success": true,
+  "questions": [
+    {
+      "id": 1,
+      "question": "This is a question",
+      "answer": "This is an answer",
+      "difficulty": 5,
+      "category": 4
+    }
+  ],
+  "totalQuestions": 100,
+  "currentCategory": "History"
+}
+```
+
+---
+
+`curl -X POST -H "Content-Type: application/json" -d '{"previous_questions": [1, 2], "quiz_category": {"id": 2}}' http://127.0.0.1:5000/quizzes`
+
+- Sends a post request in order to get the next question
+- Request Body:
+- Returns: a new question object and a success value
+
+```json
+{
+  "success": true,
+  "question": {
+    "id": 1,
+    "question": "This is a question",
+    "answer": "This is an answer",
+    "difficulty": 5,
+    "category": 4
+  }
+}
+```
+
+---
+## Testing
 
 To deploy the tests, run
 
